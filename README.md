@@ -228,13 +228,6 @@ Used to:
 - The backend can dispatch queue jobs for email confirmation; the default queue configuration uses the database driver.
 - The seeded sample data includes example products and customers to demo the application immediately after migration.
 
-## Recommended Next Improvements
-
-- Add role-based authorization beyond the default admin user.
-- Add CSV import/export for product catalog management.
-- Add advanced reporting charts for sales and low-stock trends.
-- Add order status workflow and refund handling.
-- Add print receipts or PDF generation.
 
 ## License
 
