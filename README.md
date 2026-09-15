@@ -148,7 +148,7 @@ npm run dev
 
 The frontend app will be available at:
 
-- http://localhost:5173
+- http://localhost:3000
 
 ## Environment Configuration
 
@@ -159,7 +159,7 @@ Example backend `.env` values:
 ```env
 APP_ENV=local
 APP_DEBUG=true
-DB_CONNECTION=sqlite
+DB_CONNECTION=mysql
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=admin12345
 ```
