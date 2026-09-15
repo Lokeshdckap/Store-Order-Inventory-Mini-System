@@ -1,59 +1,260 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Backend API Documentation
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This Laravel backend powers the StoreCounter inventory and retail order system. It exposes authenticated endpoints for inventory management, order creation, customer history lookup, and admin authentication.
 
-## About Laravel
+## Purpose
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The backend is responsible for:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- authenticating administrators with Sanctum tokens
+- managing product inventory and stock levels
+- validating stock before creating orders
+- recording sales and order line items
+- returning order history for each customer
+- dispatching order confirmation email jobs
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Stack
 
-## Learning Laravel
+- PHP 8.2
+- Laravel 12
+- Laravel Sanctum
+- SQLite (default local setup)
+- PHPUnit for feature tests
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Project Structure
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```text
+backend/
+├── app/
+│   ├── Exceptions/
+│   ├── Http/
+│   ├── Jobs/
+│   ├── Mail/
+│   ├── Models/
+│   ├── Providers/
+│   └── Services/
+├── bootstrap/
+├── config/
+├── database/
+│   ├── factories/
+│   ├── migrations/
+│   └── seeders/
+├── public/
+├── resources/
+├── routes/
+├── storage/
+├── tests/
+├── .env.example
+├── artisan
+├── composer.json
+├── phpunit.xml
+└── vite.config.js
+```
 
-## Laravel Sponsors
+## Setup
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Install dependencies
 
-### Premium Partners
+```bash
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Database setup
 
-## Contributing
+The project uses SQLite by default and ships with example configuration.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+php artisan migrate --seed
+```
 
-## Code of Conduct
+This creates the schema and seeds:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- default admin user
+- product catalog
+- sample customers
+- sample order history
 
-## Security Vulnerabilities
+### Start the API server
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan serve
+```
 
-## License
+Default local URL:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- http://127.0.0.1:8000
+
+## Authentication
+
+Admin login is public and returns a token in JSON. Once a user is authenticated, the token must be passed as a Bearer token on protected routes.
+
+### Login request
+
+```http
+POST /api/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "admin12345"
+}
+```
+
+### Success response
+
+```json
+{
+  "message": "Login successful",
+  "user": {
+    "id": 1,
+    "name": "Admin",
+    "email": "admin@example.com"
+  },
+  "token": "<sanctum-token>"
+}
+```
+
+## API Routes
+
+All routes under `/api` are defined in `routes/api.php`.
+
+### Public routes
+
+| Method | Route | Description |
+| --- | --- | --- |
+| GET | `/api/ping` | Health check |
+| POST | `/api/login` | Admin login |
+
+### Protected routes
+
+| Method | Route | Description |
+| --- | --- | --- |
+| GET | `/api/user` | Logged-in admin profile |
+| POST | `/api/logout` | Logout and revoke token |
+| GET | `/api/products` | List products |
+| POST | `/api/products` | Create product |
+| GET | `/api/products/low-stock` | List low-stock items |
+| PUT | `/api/products/{product}` | Update product |
+| PATCH | `/api/products/{product}/stock` | Adjust stock |
+| DELETE | `/api/products/{product}` | Delete product |
+| POST | `/api/orders` | Create order |
+| GET | `/api/orders/{order}` | View order details |
+| GET | `/api/customers/{email}/orders` | Customer order history |
+
+## Product Model
+
+Products include:
+
+- unique UUID
+- name
+- code
+- price
+- tax percentage
+- stock quantity
+
+The `Product` model uses UUID route keys and exposes a `lowStock` query scope for threshold-based checks.
+
+## Order Creation Flow
+
+The backend creates orders using `OrderService` and follows a transaction-safe flow:
+
+1. Normalize customer email and name.
+2. Aggregate requested quantities by product UUID.
+3. Lock matching product rows for update.
+4. Validate each product exists and has enough stock.
+5. Calculate line subtotal, tax, and totals.
+6. Deduct stock in the transaction.
+7. Create the order and order items.
+8. Dispatch the email job after commit.
+
+This is designed to prevent overselling when multiple requests compete for the same inventory.
+
+## Business Rules
+
+- Orders must contain at least one product.
+- Product stock cannot drop below zero.
+- Customer records are created or reused by email.
+- Order totals are computed from product unit price and tax percentage.
+- Email confirmation jobs are queued once the order transaction is committed.
+
+## Sample Payloads
+
+### Create product
+
+```http
+POST /api/products
+Authorization: Bearer <token>
+
+{
+  "name": "Mechanical Keyboard RGB",
+  "code": "SKU-KB01",
+  "price": 79.99,
+  "tax_percentage": 18,
+  "stock": 15
+}
+```
+
+### Create order
+
+```http
+POST /api/orders
+Authorization: Bearer <token>
+
+{
+  "customer_name": "Jane Doe",
+  "customer_email": "jane@example.com",
+  "items": [
+    { "product_uuid": "<uuid>", "quantity": 2 },
+    { "product_uuid": "<uuid>", "quantity": 1 }
+  ]
+}
+```
+
+## Testing
+
+Run the feature suite:
+
+```bash
+php artisan test
+```
+
+The project includes tests for:
+
+- admin authentication
+- order creation
+- stock validation
+- low-stock endpoints
+- customer order history
+- email dispatch behavior
+
+## Queue and Mail
+
+The default queue driver is `database`, and order confirmation emails are queued using a dedicated job and Mailable class.
+
+To process queued jobs:
+
+```bash
+php artisan queue:listen --tries=1
+```
+
+## Notes
+
+- The default seeder populates realistic product and customer data for demo use.
+- Low stock threshold is configurable through `config/inventory.php`.
+- The app stores product and order UUIDs in addition to standard IDs for safer route usage.
+
+## Recommended Commands
+
+```bash
+php artisan migrate:fresh --seed
+php artisan test
+php artisan queue:listen
+php artisan serve
+```
+
+---
+
+For a full project overview and frontend setup, see [../README.md](../README.md) and [../frontend/README.md](../frontend/README.md).
