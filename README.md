@@ -1,10 +1,10 @@
-Full-Stack Feed Posts Application
+Full-Stack Store and Inventory system 
 
 Frontend: React.js
 Backend: Laravel
 Database: MySQL
 
-A simple full-stack application that supports user authentication, creating posts, liking/unliking posts, and retrieving feeds.
+
 
 Features
 🔐 User Authentication
