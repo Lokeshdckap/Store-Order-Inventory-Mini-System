@@ -8,7 +8,7 @@ This project combines:
 
 - A Laravel 12 backend API with Sanctum authentication
 - A React + Vite frontend powered by Ant Design components
-- SQLite as the default local database for quick setup
+- Mysql Database
 - Inventory-aware order creation with stock validation and atomic transactions
 - Customer order history lookup by email
 - Automated order confirmation email dispatch after checkout
