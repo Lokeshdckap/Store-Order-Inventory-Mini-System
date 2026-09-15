@@ -63,4 +63,4 @@ npm install
 
 Start React App
 npm run dev
-React app will run at: http://localhost:5173
+React app will run at: http://localhost:3000
