@@ -64,7 +64,7 @@ The application is designed around a small retail flow:
 - PHP 8.2+
 - Laravel 12
 - Laravel Sanctum
-- SQLite (default)
+- Mysql
 - PHPUnit
 
 ### Frontend
